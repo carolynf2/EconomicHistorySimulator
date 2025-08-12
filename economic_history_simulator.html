@@ -1,0 +1,2878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Economic History Simulator - Chapter 17</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .timeline-nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .era-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .era-button:hover, .era-button.active {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.6);
+            transform: translateY(-2px);
+        }
+
+        .simulation-area {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            min-height: 600px;
+        }
+
+        .scenario {
+            display: none;
+        }
+
+        .scenario.active {
+            display: block;
+        }
+
+        .scenario-header {
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .scenario-title {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .scenario-subtitle {
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        .controls-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .slider-container {
+            position: relative;
+            margin: 15px 0;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .policy-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        .policy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .policy-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .policy-btn:active {
+            transform: translateY(0);
+        }
+
+        .results-section {
+            background: #e8f4fd;
+            border-left: 5px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .economic-indicators {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .indicator {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .indicator:hover {
+            transform: translateY(-5px);
+        }
+
+        .indicator-label {
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .indicator-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .indicator-change {
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .indicator-change.positive {
+            color: #28a745;
+        }
+
+        .indicator-change.negative {
+            color: #dc3545;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            height: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .phillips-curve {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            border-left: 3px solid #333;
+            border-bottom: 3px solid #333;
+        }
+
+        .axis-label {
+            position: absolute;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .x-axis-label {
+            bottom: -25px;
+            right: 50%;
+            transform: translateX(50%);
+        }
+
+        .y-axis-label {
+            left: -25px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+        }
+
+        .curve-point {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .current-point {
+            background: #dc3545;
+            width: 12px;
+            height: 12px;
+            border: 3px solid white;
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+        }
+
+        .explanation {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .explanation h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .explanation p {
+            color: #856404;
+            line-height: 1.6;
+        }
+
+        .food-price-chart {
+            width: 100%;
+            padding: 10px;
+        }
+
+        .price-category {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+
+        .category-label {
+            min-width: 100px;
+            font-weight: bold;
+            font-size: 1em;
+        }
+
+        .price-bar {
+            flex: 1;
+            height: 25px;
+            background: #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .price-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #dc3545 100%);
+            border-radius: 12px;
+            transition: width 0.8s ease;
+            position: relative;
+        }
+
+        .price-value {
+            min-width: 60px;
+            text-align: right;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .employment-chart {
+            width: 100%;
+            padding: 10px;
+        }
+        
+        .company-size-category {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+        
+        .company-label {
+            min-width: 180px;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+        
+        .employment-bar {
+            flex: 1;
+            height: 25px;
+            background: #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .employment-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff 0%, #17a2b8 50%, #6f42c1 100%);
+            border-radius: 12px;
+            transition: width 0.8s ease;
+            position: relative;
+        }
+        
+        .employment-value {
+            min-width: 60px;
+            text-align: right;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .fiscal-impact-chart {
+            width: 100%;
+            padding: 15px;
+        }
+        
+        .impact-category {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 15px;
+        }
+        
+        .impact-category.total-impact {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #667eea;
+        }
+        
+        .impact-label {
+            min-width: 200px;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+        
+        .impact-bar {
+            flex: 1;
+            height: 28px;
+            background: #e9ecef;
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .impact-fill {
+            height: 100%;
+            border-radius: 14px;
+            transition: width 0.8s ease;
+            position: relative;
+        }
+        
+        .impact-fill.direct-effect {
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .impact-fill.multiplier-effect {
+            background: linear-gradient(90deg, #007bff 0%, #0056b3 100%);
+        }
+        
+        .impact-fill.crowding-out-effect {
+            background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+        }
+        
+        .impact-fill.export-effect {
+            background: linear-gradient(90deg, #ffc107 0%, #e0a800 100%);
+        }
+        
+        .impact-fill.total-effect {
+            background: linear-gradient(90deg, #6f42c1 0%, #563d7c 100%);
+        }
+        
+        .impact-value {
+            min-width: 80px;
+            text-align: right;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Money Market Chart Styles */
+        .money-market-chart {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+
+        .chart-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            border-left: 3px solid #333;
+            border-bottom: 3px solid #333;
+        }
+
+        .chart-area {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .money-supply-line {
+            position: absolute;
+            width: 4px;
+            height: 80%;
+            background-color: #e74c3c;
+            left: 60%;
+            top: 10%;
+            z-index: 2;
+        }
+
+        .money-demand-curve {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border: 4px solid #3498db;
+            border-top: none;
+            border-right: none;
+            border-radius: 0 0 0 75px;
+            left: 20%;
+            top: 20%;
+            transform: rotate(-45deg);
+            z-index: 1;
+        }
+
+        .equilibrium-point {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background-color: #27ae60;
+            border-radius: 50%;
+            left: 59%;
+            top: 45%;
+            z-index: 3;
+            box-shadow: 0 0 10px rgba(39, 174, 96, 0.5);
+        }
+
+        .rate-label {
+            position: absolute;
+            left: 65%;
+            top: 43%;
+            background: rgba(39, 174, 96, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .y-axis-label {
+            position: absolute;
+            left: -50px;
+            top: 50%;
+            transform: rotate(-90deg);
+            transform-origin: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .x-axis-label {
+            position: absolute;
+            bottom: -25px;
+            right: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .simulation-area {
+                padding: 20px;
+            }
+            
+            .economic-indicators {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ Economic History Simulator</h1>
+            <p>Experience the major economic events of the 20th century and understand their policy implications</p>
+        </div>
+
+        <div class="timeline-nav">
+            <button class="era-button active" data-era="1920s">1920s Boom</button>
+            <button class="era-button" data-era="1930s">Great Depression</button>
+            <button class="era-button" data-era="phillips">Phillips Curve</button>
+            <button class="era-button" data-era="1970s">Oil Crisis</button>
+            <button class="era-button" data-era="1980s">Volcker Era</button>
+            <button class="era-button" data-era="modern">Modern Crisis</button>
+            <button class="era-button" data-era="future-work">Future of Work</button>
+            <button class="era-button" data-era="fiscal-lab">Fiscal Policy Lab</button>
+            <button class="era-button" data-era="central-bank">Central Bank Governor</button>
+        </div>
+
+        <div class="simulation-area">
+            <!-- 1920s Scenario -->
+            <div class="scenario active" id="scenario-1920s">
+                <div class="scenario-header">
+                    <h2 class="scenario-title">The Roaring Twenties (1920s)</h2>
+                    <p class="scenario-subtitle">Experience the economic boom following WWI and see how policy choices led to the stock market bubble</p>
+                </div>
+
+                <div class="controls-section">
+                    <h3>Policy Levers</h3>
+                    <div class="control-group">
+                        <label class="control-label">Tax Rate (%)</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="tax-rate-1920s" min="25" max="75" value="25" step="5">
+                            <div class="slider-labels">
+                                <span>25%</span>
+                                <span>50%</span>
+                                <span>75%</span>
+                            </div>
+                        </div>
+                        <p>Current: <span id="tax-display-1920s">25%</span></p>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Money Supply Growth (%)</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="money-supply-1920s" min="0" max="100" value="60" step="10">
+                            <div class="slider-labels">
+                                <span>0%</span>
+                                <span>50%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                        <p>Current: <span id="money-display-1920s">60%</span></p>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Interest Rate Policy</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="setInterestRate('low')">Keep Low (Easy Money)</button>
+                            <button class="policy-btn" onclick="setInterestRate('moderate')">Moderate Increase</button>
+                            <button class="policy-btn" onclick="setInterestRate('high')">Aggressive Increase</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="economic-indicators">
+                    <div class="indicator">
+                        <div class="indicator-label">Stock Market (Dow Jones)</div>
+                        <div class="indicator-value" id="stock-market-1920s">120</div>
+                        <div class="indicator-change" id="stock-change-1920s">+15%</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">GDP Growth (%)</div>
+                        <div class="indicator-value" id="gdp-1920s">4.2</div>
+                        <div class="indicator-change" id="gdp-change-1920s">+1.2%</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Unemployment (%)</div>
+                        <div class="indicator-value" id="unemployment-1920s">3.7</div>
+                        <div class="indicator-change" id="unemployment-change-1920s">-1.1%</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Inflation (%)</div>
+                        <div class="indicator-value" id="inflation-1920s">1.8</div>
+                        <div class="indicator-change" id="inflation-change-1920s">+0.3%</div>
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <h4>Economic Consequences:</h4>
+                    <p id="consequences-1920s">Low taxes and easy money are fueling economic growth and innovation. New products like radios, cars, and refrigerators are becoming widely available. However, easy credit is also creating speculation in the stock market...</p>
+                </div>
+
+                <div class="explanation">
+                    <h4>Historical Context</h4>
+                    <p>After WWI, North American countries cut taxes from ~75% to ~25% and expanded money supply by roughly 60%. This led to the "Roaring Twenties" boom, but also created conditions for the 1929 stock market crash when the Federal Reserve raised interest rates and the Smoot-Hawley Act threatened trade.</p>
+                </div>
+            </div>
+
+            <!-- Great Depression Scenario -->
+            <div class="scenario" id="scenario-1930s">
+                <div class="scenario-header">
+                    <h2 class="scenario-title">The Great Depression (1930s)</h2>
+                    <p class="scenario-subtitle">Navigate the economic crisis and test different policy responses</p>
+                </div>
+
+                <div class="controls-section">
+                    <h3>Crisis Response Options</h3>
+                    <div class="control-group">
+                        <label class="control-label">Government Spending Response</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="setDepression('minimal')">Minimal Intervention</button>
+                            <button class="policy-btn" onclick="setDepression('moderate')">New Deal Programs</button>
+                            <button class="policy-btn" onclick="setDepression('massive')">Massive Stimulus</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Trade Policy</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="setTrade('protectionist')">Smoot-Hawley Tariffs</button>
+                            <button class="policy-btn" onclick="setTrade('neutral')">Maintain Current</button>
+                            <button class="policy-btn" onclick="setTrade('free')">Reduce Trade Barriers</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Banking Policy</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="setBanking('hands-off')">Let Banks Fail</button>
+                            <button class="policy-btn" onclick="setBanking('regulate')">Glass-Steagall Act</button>
+                            <button class="policy-btn" onclick="setBanking('support')">Direct Bank Support</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">GDP Components During Depression</div>
+                    <canvas id="gdp-chart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="economic-indicators">
+                    <div class="indicator">
+                        <div class="indicator-label">GDP (Billions)</div>
+                        <div class="indicator-value" id="gdp-depression">577</div>
+                        <div class="indicator-change negative" id="gdp-change-depression">-27%</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Unemployment (%)</div>
+                        <div class="indicator-value" id="unemployment-depression">25</div>
+                        <div class="indicator-change negative" id="unemployment-change-depression">+21%</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Investment (Billions)</div>
+                        <div class="indicator-value" id="investment-depression">16</div>
+                        <div class="indicator-change negative" id="investment-change-depression">-83%</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Price Level</div>
+                        <div class="indicator-value" id="prices-depression">85</div>
+                        <div class="indicator-change negative" id="price-change-depression">-15%</div>
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <h4>Policy Impact:</h4>
+                    <p id="depression-results">The economy is in severe contraction. Banks are failing, unemployment is soaring, and deflation is making debt burdens worse. Your policy choices will determine how quickly the economy recovers...</p>
+                </div>
+            </div>
+
+            <!-- Phillips Curve Scenario -->
+            <div class="scenario" id="scenario-phillips">
+                <div class="scenario-header">
+                    <h2 class="scenario-title">The Phillips Curve Trade-off</h2>
+                    <p class="scenario-subtitle">Explore the relationship between inflation and unemployment</p>
+                </div>
+
+                <div class="controls-section">
+                    <h3>Monetary Policy Settings</h3>
+                    <div class="control-group">
+                        <label class="control-label">Expected Inflation (%)</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="expected-inflation" min="0" max="10" value="3" step="0.5">
+                            <div class="slider-labels">
+                                <span>0%</span>
+                                <span>5%</span>
+                                <span>10%</span>
+                            </div>
+                        </div>
+                        <p>Current: <span id="expected-inflation-display">3.0%</span></p>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Actual Inflation Target (%)</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="actual-inflation" min="0" max="12" value="3" step="0.5">
+                            <div class="slider-labels">
+                                <span>0%</span>
+                                <span>6%</span>
+                                <span>12%</span>
+                            </div>
+                        </div>
+                        <p>Current: <span id="actual-inflation-display">3.0%</span></p>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Supply Shock</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="applySupplyShock('none')">No Shock</button>
+                            <button class="policy-btn" onclick="applySupplyShock('mild')">Mild Oil Price Increase</button>
+                            <button class="policy-btn" onclick="applySupplyShock('severe')">Oil Crisis (1970s)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Phillips Curve Relationship</div>
+                    <div class="phillips-curve" id="phillips-curve">
+                        <div class="axis-label y-axis-label">Inflation Rate (%)</div>
+                        <div class="axis-label x-axis-label">Unemployment Rate (%)</div>
+                    </div>
+                </div>
+
+                <div class="economic-indicators">
+                    <div class="indicator">
+                        <div class="indicator-label">Natural Rate of Unemployment</div>
+                        <div class="indicator-value" id="natural-unemployment">6.0</div>
+                        <div class="indicator-change" id="natural-unemployment-change">%</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Current Unemployment</div>
+                        <div class="indicator-value" id="current-unemployment">6.0</div>
+                        <div class="indicator-change" id="current-unemployment-change">%</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Inflation Gap</div>
+                        <div class="indicator-value" id="inflation-gap">0.0</div>
+                        <div class="indicator-change" id="inflation-gap-change">pp</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Policy Effectiveness</div>
+                        <div class="indicator-value" id="policy-effectiveness">High</div>
+                        <div class="indicator-change" id="effectiveness-change"></div>
+                    </div>
+                </div>
+
+                <div class="explanation">
+                    <h4>Phillips Curve Equation</h4>
+                    <p><strong>U rate = Natural rate of U - a(Actual inflation - Expected inflation)</strong></p>
+                    <p>In the short run, the Fed can reduce unemployment below the natural rate by making inflation greater than expected. In the long run, expectations catch up and unemployment returns to its natural rate.</p>
+                </div>
+            </div>
+
+            <!-- 1970s Oil Crisis -->
+            <div class="scenario" id="scenario-1970s">
+                <div class="scenario-header">
+                    <h2 class="scenario-title">1970s Oil Price Shocks</h2>
+                    <p class="scenario-subtitle">Experience stagflation and the policy dilemma it created</p>
+                </div>
+
+                <div class="controls-section">
+                    <h3>Policy Response to Supply Shock</h3>
+                    <div class="control-group">
+                        <label class="control-label">Oil Price Shock Magnitude</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="oil-price-shock" min="1" max="10" value="3" step="1">
+                            <div class="slider-labels">
+                                <span>$3.56</span>
+                                <span>$20</span>
+                                <span>$38</span>
+                            </div>
+                        </div>
+                        <p>Oil Price: $<span id="oil-price-display">10.11</span>/barrel</p>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Federal Reserve Response</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="setFedResponse('accommodate')">Accommodate (Fight Unemployment)</button>
+                            <button class="policy-btn" onclick="setFedResponse('neutral')">Stay Neutral</button>
+                            <button class="policy-btn" onclick="setFedResponse('fight')">Fight Inflation</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="economic-indicators">
+                    <div class="indicator">
+                        <div class="indicator-label">Inflation Rate (%)</div>
+                        <div class="indicator-value" id="inflation-1970s">9.2</div>
+                        <div class="indicator-change positive" id="inflation-change-1970s">+4.2%</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Unemployment Rate (%)</div>
+                        <div class="indicator-value" id="unemployment-1970s">7.5</div>
+                        <div class="indicator-change positive" id="unemployment-change-1970s">+2.1%</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Misery Index</div>
+                        <div class="indicator-value" id="misery-index">16.7</div>
+                        <div class="indicator-change positive" id="misery-change">+6.3</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Real GDP Growth (%)</div>
+                        <div class="indicator-value" id="gdp-1970s">-1.2</div>
+                        <div class="indicator-change negative" id="gdp-change-1970s">-3.8%</div>
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <h4>Stagflation Dilemma:</h4>
+                    <p id="stagflation-results">The oil price shock has created stagflation - both inflation and unemployment are rising simultaneously. Traditional Phillips Curve thinking suggests this shouldn't happen. Your policy choice will determine whether you prioritize fighting inflation or unemployment in the short term.</p>
+                </div>
+
+                <div class="explanation">
+                    <h4>Supply Shocks and the Phillips Curve</h4>
+                    <p>Supply shocks shift both the aggregate supply curve and the Phillips Curve upward, creating the dreaded combination of higher inflation AND higher unemployment. This broke the simple Phillips Curve relationship and led to new economic thinking about expectations and credibility.</p>
+                </div>
+            </div>
+
+            <!-- 1980s Volcker Era -->
+            <div class="scenario" id="scenario-1980s">
+                <div class="scenario-header">
+                    <h2 class="scenario-title">The Volcker Disinflation (1980s)</h2>
+                    <p class="scenario-subtitle">Experience the painful process of breaking high inflation expectations</p>
+                </div>
+
+                <div class="controls-section">
+                    <h3>Disinflation Policy</h3>
+                    <div class="control-group">
+                        <label class="control-label">Federal Funds Rate (%)</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="fed-funds-rate" min="5" max="20" value="10" step="0.5">
+                            <div class="slider-labels">
+                                <span>5%</span>
+                                <span>12.5%</span>
+                                <span>20%</span>
+                            </div>
+                        </div>
+                        <p>Current: <span id="fed-funds-display">10.0%</span></p>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Credibility Strategy</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="setCredibility('weak')">Gradual, Uncertain</button>
+                            <button class="policy-btn" onclick="setCredibility('moderate')">Clear Communication</button>
+                            <button class="policy-btn" onclick="setCredibility('strong')">Volcker Shock</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Sacrifice Ratio</label>
+                        <p>Estimated output loss per 1% reduction in inflation: <span id="sacrifice-ratio">4.2</span>%</p>
+                        <p>Total expected GDP sacrifice: <span id="total-sacrifice">25.2</span>% over 3 years</p>
+                    </div>
+                </div>
+
+                <div class="economic-indicators">
+                    <div class="indicator">
+                        <div class="indicator-label">Inflation Rate (%)</div>
+                        <div class="indicator-value" id="inflation-1980s">10.3</div>
+                        <div class="indicator-change" id="inflation-change-1980s">Initial</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Unemployment Rate (%)</div>
+                        <div class="indicator-value" id="unemployment-1980s">7.2</div>
+                        <div class="indicator-change" id="unemployment-change-1980s">Initial</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Expected Inflation (%)</div>
+                        <div class="indicator-value" id="expected-inflation-1980s">9.8</div>
+                        <div class="indicator-change" id="expected-change-1980s">Sticky</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Real GDP Growth (%)</div>
+                        <div class="indicator-value" id="real-gdp-1980s">2.1</div>
+                        <div class="indicator-change" id="gdp-change-1980s">Slowing</div>
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <h4>Disinflation Progress:</h4>
+                    <p id="disinflation-results">The aggressive monetary tightening is beginning to bite. Unemployment is rising as the economy enters recession, but inflation expectations are slow to adjust. The credibility of your commitment to low inflation will determine how quickly expectations adapt and reduce the sacrifice ratio.</p>
+                </div>
+
+                <div class="explanation">
+                    <h4>The Cost of Reducing Inflation</h4>
+                    <p>The sacrifice ratio measures how much output must be given up to reduce inflation by 1 percentage point. Volcker's aggressive approach led to severe recession but ultimately established credibility that made future disinflations less costly. The key insight: credible commitment reduces the sacrifice ratio.</p>
+                </div>
+            </div>
+
+            <!-- Modern Crisis Scenario -->
+            <div class="scenario" id="scenario-modern">
+                <div class="scenario-header">
+                    <h2 class="scenario-title">Modern Inflation Crisis (2020s)</h2>
+                    <p class="scenario-subtitle">Navigate climate-driven food inflation and supply chain disruptions in the modern economy</p>
+                </div>
+
+                <div class="controls-section">
+                    <h3>Supply Shock Controls</h3>
+                    <div class="control-group">
+                        <label class="control-label">Climate/Weather Events</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="setWeatherShock('none')">Normal Weather</button>
+                            <button class="policy-btn" onclick="setWeatherShock('drought')">California Drought</button>
+                            <button class="policy-btn" onclick="setWeatherShock('hurricane')">Florida Hurricane</button>
+                            <button class="policy-btn" onclick="setWeatherShock('global')">Global Heat Wave</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Geopolitical Shocks</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="setGeopoliticalShock('none')">Stable Trade</button>
+                            <button class="policy-btn" onclick="setGeopoliticalShock('ukraine')">Ukraine War</button>
+                            <button class="policy-btn" onclick="setGeopoliticalShock('pandemic')">Pandemic Disruption</button>
+                            <button class="policy-btn" onclick="setGeopoliticalShock('suez')">Suez Canal Blockage</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Central Bank Response</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="setModernFedResponse('dovish')">Look Through Food Prices</button>
+                            <button class="policy-btn" onclick="setModernFedResponse('moderate')">Gradual Tightening</button>
+                            <button class="policy-btn" onclick="setModernFedResponse('hawkish')">Aggressive Tightening</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Food Price Index by Category</div>
+                    <div class="food-price-chart">
+                        <div class="price-category">
+                            <span class="category-label">🥬 Vegetables</span>
+                            <div class="price-bar">
+                                <div class="price-fill" id="vegetables-bar" style="width: 30%"></div>
+                            </div>
+                            <span class="price-value" id="vegetables-price">+8%</span>
+                        </div>
+                        <div class="price-category">
+                            <span class="category-label">🥚 Eggs</span>
+                            <div class="price-bar">
+                                <div class="price-fill" id="eggs-bar" style="width: 20%"></div>
+                            </div>
+                            <span class="price-value" id="eggs-price">+5%</span>
+                        </div>
+                        <div class="price-category">
+                            <span class="category-label">☕ Coffee</span>
+                            <div class="price-bar">
+                                <div class="price-fill" id="coffee-bar" style="width: 50%"></div>
+                            </div>
+                            <span class="price-value" id="coffee-price">+55%</span>
+                        </div>
+                        <div class="price-category">
+                            <span class="category-label">🍫 Cocoa</span>
+                            <div class="price-bar">
+                                <div class="price-fill" id="cocoa-bar" style="width: 100%"></div>
+                            </div>
+                            <span class="price-value" id="cocoa-price">+300%</span>
+                        </div>
+                        <div class="price-category">
+                            <span class="category-label">🍚 Rice</span>
+                            <div class="price-bar">
+                                <div class="price-fill" id="rice-bar" style="width: 40%"></div>
+                            </div>
+                            <span class="price-value" id="rice-price">+48%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="economic-indicators">
+                    <div class="indicator">
+                        <div class="indicator-label">Core Inflation (%)</div>
+                        <div class="indicator-value" id="core-inflation-modern">2.7</div>
+                        <div class="indicator-change" id="core-inflation-change">+0.7%</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Food Inflation (%)</div>
+                        <div class="indicator-value" id="food-inflation-modern">8.2</div>
+                        <div class="indicator-change positive" id="food-inflation-change">+3.8%</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Low-Income Impact</div>
+                        <div class="indicator-value" id="inequality-impact">High</div>
+                        <div class="indicator-change" id="inequality-change">15% of budget</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Fed Credibility</div>
+                        <div class="indicator-value" id="fed-credibility-modern">Stable</div>
+                        <div class="indicator-change" id="credibility-change-modern">2% Target</div>
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <h4>Economic Impact Assessment:</h4>
+                    <p id="modern-crisis-results">Climate-driven supply shocks are creating targeted inflation in food prices. While headline inflation remains moderate, vulnerable populations spending 15%+ of income on food are experiencing severe cost pressures. Central bank faces the challenge of distinguishing between temporary supply shocks and persistent inflation expectations.</p>
+                </div>
+
+                <div class="explanation">
+                    <h4>Modern Supply Shocks vs. Traditional Phillips Curve</h4>
+                    <p><strong>Key Challenge:</strong> Climate change creates <em>persistent</em> supply shocks rather than temporary ones. Unlike the 1970s oil crisis, weather-driven food inflation may become a recurring feature, forcing central banks to reconsider their frameworks. When droughts in California (40% of US vegetables) or Brazil (major coffee producer) become annual events, is this still "temporary" inflation to look through?</p>
+                </div>
+
+                <div class="explanation">
+                    <h4>Inequality Amplification</h4>
+                    <p>Food inflation hits differently across income levels. While average US households spend 10% of budget on food, low-income families spend 15-20%. A 50% increase in food prices represents 2.5-5% of total budget for low-income vs 1.5% for average households - creating disproportionate welfare effects that traditional inflation measures don't capture.</p>
+                </div>
+            </div>
+            
+            <!-- Future of Work Scenario -->
+            <div class="scenario" id="scenario-future-work">
+                <div class="scenario-header">
+                    <h2 class="scenario-title">Future of Work (2020s-2030s)</h2>
+                    <p class="scenario-subtitle">Navigate the AI-driven transformation from mega-employers to lean companies and its impact on employment</p>
+                </div>
+
+                <div class="controls-section">
+                    <h3>AI and Employment Policy</h3>
+                    <div class="control-group">
+                        <label class="control-label">AI Adoption Rate</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="setAIAdoption('slow')">Gradual Integration</button>
+                            <button class="policy-btn" onclick="setAIAdoption('moderate')">Market-Led Adoption</button>
+                            <button class="policy-btn" onclick="setAIAdoption('rapid')">Aggressive Automation</button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Corporate Structure Policy</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="setCorporatePolicy('status-quo')">Protect Mega-Employers</button>
+                            <button class="policy-btn" onclick="setCorporatePolicy('balanced')">Support Transition</button>
+                            <button class="policy-btn" onclick="setCorporatePolicy('lean')">Encourage Lean Companies</button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Worker Support Policy</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="setWorkerSupport('minimal')">Market-Based</button>
+                            <button class="policy-btn" onclick="setWorkerSupport('retraining')">Retraining Programs</button>
+                            <button class="policy-btn" onclick="setWorkerSupport('ubi')">Universal Basic Income</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Employment Distribution by Company Size</div>
+                    <div class="employment-chart">
+                        <div class="company-size-category">
+                            <span class="company-label">🏢 Mega-Corps (10,000+)</span>
+                            <div class="employment-bar">
+                                <div class="employment-fill" id="mega-corp-bar" style="width: 33%"></div>
+                            </div>
+                            <span class="employment-value" id="mega-corp-percent">33%</span>
+                        </div>
+                        <div class="company-size-category">
+                            <span class="company-label">🏬 Large Firms (1,000-10,000)</span>
+                            <div class="employment-bar">
+                                <div class="employment-fill" id="large-firm-bar" style="width: 25%"></div>
+                            </div>
+                            <span class="employment-value" id="large-firm-percent">25%</span>
+                        </div>
+                        <div class="company-size-category">
+                            <span class="company-label">🏪 Small-Medium (100-1,000)</span>
+                            <div class="employment-bar">
+                                <div class="employment-fill" id="medium-firm-bar" style="width: 27%"></div>
+                            </div>
+                            <span class="employment-value" id="medium-firm-percent">27%</span>
+                        </div>
+                        <div class="company-size-category">
+                            <span class="company-label">👥 Lean Companies (<100)</span>
+                            <div class="employment-bar">
+                                <div class="employment-fill" id="lean-company-bar" style="width: 15%"></div>
+                            </div>
+                            <span class="employment-value" id="lean-company-percent">15%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="economic-indicators">
+                    <div class="indicator">
+                        <div class="indicator-label">White-Collar Displacement</div>
+                        <div class="indicator-value" id="displacement-rate">15</div>
+                        <div class="indicator-change" id="displacement-change">%</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Average Company Size</div>
+                        <div class="indicator-value" id="avg-company-size">2,400</div>
+                        <div class="indicator-change" id="size-change">employees</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Career Path Index</div>
+                        <div class="indicator-value" id="career-path-index">75</div>
+                        <div class="indicator-change" id="career-change">stability</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Innovation Rate</div>
+                        <div class="indicator-value" id="innovation-rate">High</div>
+                        <div class="indicator-change" id="innovation-change">velocity</div>
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <h4>Economic Transformation Impact:</h4>
+                    <p id="future-work-results">AI-driven efficiency gains are enabling smaller, nimble companies to compete with traditional mega-employers. While innovation accelerates, workers face reduced career paths and job security as employment shifts toward more flexible but less stable arrangements.</p>
+                </div>
+
+                <div class="explanation">
+                    <h4>The End of the Mega-Employer Era</h4>
+                    <p><strong>Historical Context:</strong> Since WWII, about 33% of workers were employed by companies with 10,000+ employees. AI is reversing this 100-year trend toward larger organizations. As Amazon's CEO noted, AI "efficiency gains" will reduce headcount. Companies like Meta, Microsoft, and Google now employ fewer people than at their 2022 peaks.</p>
+                </div>
+
+                <div class="explanation">
+                    <h4>Policy Trade-offs</h4>
+                    <p><strong>Innovation vs. Security:</strong> Lean AI-powered companies innovate faster but offer less job security. Policy choices will determine whether this transition creates broadly shared prosperity or increases inequality. The challenge: maintaining social cohesion while allowing creative destruction to drive economic progress.</p>
+                </div>
+            </div>
+            
+            <!-- Fiscal Policy Lab Scenario -->
+            <div class="scenario" id="scenario-fiscal-lab">
+                <div class="scenario-header">
+                    <h2 class="scenario-title">Fiscal Policy Lab (Government Economic Advisor)</h2>
+                    <p class="scenario-subtitle">You're the chief economic advisor. Navigate real fiscal policy dilemmas and see the multiplier vs crowding-out effects in action</p>
+                </div>
+
+                <div class="controls-section">
+                    <h3>Crisis Scenario Selection</h3>
+                    <div class="control-group">
+                        <label class="control-label">Economic Crisis</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="setFiscalCrisis('recession')">📉 Recession (GDP -3%)</button>
+                            <button class="policy-btn" onclick="setFiscalCrisis('boom')">📈 Overheating (+8% GDP)</button>
+                            <button class="policy-btn" onclick="setFiscalCrisis('stagflation')">⚡ Stagflation Crisis</button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Government Spending Response (ΔG)</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="government-spending" min="-100" max="200" value="0" step="10">
+                            <div class="slider-labels">
+                                <span>-$100B</span>
+                                <span>$0</span>
+                                <span>+$200B</span>
+                            </div>
+                        </div>
+                        <p>Change: <span id="spending-display">$0B</span></p>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Tax Policy (ΔT)</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="tax-policy" min="-50" max="50" value="0" step="5">
+                            <div class="slider-labels">
+                                <span>-$50B Cut</span>
+                                <span>$0</span>
+                                <span>+$50B Increase</span>
+                            </div>
+                        </div>
+                        <p>Change: <span id="tax-display">$0B</span></p>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Marginal Propensity to Consume (MPC)</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="mpc-slider" min="0.5" max="0.95" value="0.8" step="0.05">
+                            <div class="slider-labels">
+                                <span>0.5</span>
+                                <span>0.75</span>
+                                <span>0.95</span>
+                            </div>
+                        </div>
+                        <p>MPC: <span id="mpc-display">0.8</span> (Multiplier: <span id="multiplier-display">5.0</span>)</p>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Exchange Rate Regime</label>
+                        <div class="policy-buttons">
+                            <button class="policy-btn" onclick="setExchangeRegime('flexible')">Flexible Exchange</button>
+                            <button class="policy-btn" onclick="setExchangeRegime('fixed')">Fixed Exchange</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Fiscal Policy Impact Breakdown</div>
+                    <div class="fiscal-impact-chart">
+                        <div class="impact-category">
+                            <span class="impact-label">💰 Direct Spending Effect</span>
+                            <div class="impact-bar">
+                                <div class="impact-fill direct-effect" id="direct-effect-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="impact-value" id="direct-effect-value">$0B</span>
+                        </div>
+                        <div class="impact-category">
+                            <span class="impact-label">🔄 Multiplier Effect</span>
+                            <div class="impact-bar">
+                                <div class="impact-fill multiplier-effect" id="multiplier-effect-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="impact-value" id="multiplier-effect-value">$0B</span>
+                        </div>
+                        <div class="impact-category">
+                            <span class="impact-label">📉 Crowding-Out Effect</span>
+                            <div class="impact-bar">
+                                <div class="impact-fill crowding-out-effect" id="crowding-out-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="impact-value" id="crowding-out-value">-$0B</span>
+                        </div>
+                        <div class="impact-category">
+                            <span class="impact-label">🌍 Net Export Effect</span>
+                            <div class="impact-bar">
+                                <div class="impact-fill export-effect" id="export-effect-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="impact-value" id="export-effect-value">$0B</span>
+                        </div>
+                        <div class="impact-category total-impact">
+                            <span class="impact-label"><strong>📊 Total GDP Impact</strong></span>
+                            <div class="impact-bar">
+                                <div class="impact-fill total-effect" id="total-impact-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="impact-value" id="total-impact-value"><strong>$0B</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="economic-indicators">
+                    <div class="indicator">
+                        <div class="indicator-label">Policy Lag Time</div>
+                        <div class="indicator-value" id="policy-lag">6</div>
+                        <div class="indicator-change" id="lag-change">months</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Interest Rate Impact</div>
+                        <div class="indicator-value" id="interest-rate-impact">+0.5</div>
+                        <div class="indicator-change" id="rate-change">percentage points</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Budget Deficit</div>
+                        <div class="indicator-value" id="budget-deficit">$0</div>
+                        <div class="indicator-change" id="deficit-change">billion</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Policy Effectiveness</div>
+                        <div class="indicator-value" id="policy-effectiveness">Moderate</div>
+                        <div class="indicator-change" id="effectiveness-rating">timing issues</div>
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <h4>Economic Advisory Report:</h4>
+                    <p id="fiscal-lab-results">Welcome to the Fiscal Policy Lab! Select a crisis scenario and adjust your policy levers to see how the multiplier effect, crowding-out, and international factors interact in real-time. Your choices have consequences - just like real economic advisors face.</p>
+                </div>
+
+                <div class="explanation">
+                    <h4>Key Economic Formulas in Action</h4>
+                    <p><strong>Multiplier:</strong> ΔY = [1/(1-MPC)] × ΔG</p>
+                    <p><strong>Tax Multiplier:</strong> ΔY = [-MPC/(1-MPC)] × ΔT</p>
+                    <p><strong>Crowding-Out:</strong> Higher G → Higher r → Lower I → Reduces net AD impact</p>
+                </div>
+
+                <div class="explanation">
+                    <h4>Real-World Policy Dilemmas</h4>
+                    <p><strong>The Timing Problem:</strong> Fiscal policy takes 6-18 months to pass through parliament and take effect. By then, economic conditions may have completely changed. <strong>The Bombardier Example:</strong> When government buys $20B of planes from Bombardier, workers and shareholders spend their income, creating additional rounds of economic activity through the multiplier effect.</p>
+                </div>
+            </div>
+            
+            <!-- Central Bank Governor Scenario -->
+            <div class="scenario" id="scenario-central-bank">
+                <div class="scenario-header">
+                    <h2 class="scenario-title">Central Bank Governor Simulator (Monetary Policy)</h2>
+                    <p class="scenario-subtitle">You're the Bank of Canada Governor. Use the Theory of Liquidity Preference to navigate crises - see how your money supply decisions instantly affect interest rates, investment, and exchange rates</p>
+                </div>
+
+                <div class="controls-section">
+                    <h4>Crisis Scenario Selection</h4>
+                    <div class="control-group">
+                        <label for="crisis-scenario">Current Economic Crisis:</label>
+                        <select id="crisis-scenario" class="control-input">
+                            <option value="recession">Recession (GDP falling, unemployment rising)</option>
+                            <option value="inflation">Inflation Surge (prices rising rapidly)</option>
+                            <option value="financial-crisis">Financial Crisis (banking system stress)</option>
+                            <option value="covid">Pandemic Lockdown (economic shutdown)</option>
+                            <option value="oil-shock">Oil Price Shock (supply disruption)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="controls-section">
+                    <h4>Monetary Policy Tools</h4>
+                    <div class="control-group">
+                        <label for="money-supply-policy">Money Supply Adjustment (% change)</label>
+                        <input type="range" id="money-supply-policy" min="-20" max="50" value="0" step="1" class="control-input">
+                        <span id="money-supply-display">0%</span>
+                        <div class="control-hint">Negative = Contractionary | Positive = Expansionary</div>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="bond-purchases">Government Bond Purchases (Quantitative Easing)</label>
+                        <input type="range" id="bond-purchases" min="0" max="500" value="100" step="10" class="control-input">
+                        <span id="bond-purchases-display">$100B</span>
+                        <div class="control-hint">Emergency tool: Inject liquidity directly into markets</div>
+                    </div>
+                </div>
+
+                <div class="controls-section">
+                    <h4>Economic Parameters</h4>
+                    <div class="control-group">
+                        <label for="price-level-cb">Price Level (affects money demand)</label>
+                        <input type="range" id="price-level-cb" min="90" max="150" value="100" step="2" class="control-input">
+                        <span id="price-level-display">100</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="income-level-cb">Real Income Level (Y - affects money demand)</label>
+                        <input type="range" id="income-level-cb" min="80" max="120" value="100" step="2" class="control-input">
+                        <span id="income-level-display">100</span>
+                    </div>
+                </div>
+
+                <div class="visualization-section">
+                    <h4>Liquidity Preference in Action</h4>
+                    <div class="money-market-chart">
+                        <div class="chart-title">Money Market Equilibrium</div>
+                        <div class="chart-container">
+                            <div class="y-axis-label">Interest Rate (%)</div>
+                            <div class="chart-area" id="money-market-viz">
+                                <div class="money-supply-line" id="ms-line"></div>
+                                <div class="money-demand-curve" id="md-curve"></div>
+                                <div class="equilibrium-point" id="equilibrium-point"></div>
+                                <div class="rate-label" id="equilibrium-rate">4.5%</div>
+                            </div>
+                            <div class="x-axis-label">Money Quantity (M)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="economic-indicators">
+                    <div class="indicator">
+                        <div class="indicator-label">Interest Rate (%)</div>
+                        <div class="indicator-value" id="interest-rate-cb">4.5</div>
+                        <div class="indicator-change" id="interest-rate-change-cb">Equilibrium</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Investment Level</div>
+                        <div class="indicator-value" id="investment-level">Normal</div>
+                        <div class="indicator-change" id="investment-change">0% change</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">CAD Exchange Rate</div>
+                        <div class="indicator-value" id="exchange-rate">$0.75 USD</div>
+                        <div class="indicator-change" id="exchange-change">Stable</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Net Exports</div>
+                        <div class="indicator-value" id="net-exports-cb">Balanced</div>
+                        <div class="indicator-change" id="exports-change">0% change</div>
+                    </div>
+                </div>
+
+                <div class="economic-indicators">
+                    <div class="indicator">
+                        <div class="indicator-label">Aggregate Demand</div>
+                        <div class="indicator-value" id="aggregate-demand-cb">100</div>
+                        <div class="indicator-change" id="ad-change-cb">Baseline</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Money Demand (Liquidity)</div>
+                        <div class="indicator-value" id="money-demand-cb">Normal</div>
+                        <div class="indicator-change" id="md-change-cb">Stable</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Bond Prices</div>
+                        <div class="indicator-value" id="bond-prices">$100</div>
+                        <div class="indicator-change" id="bond-price-change">Stable</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-label">Financial Stress</div>
+                        <div class="indicator-value" id="financial-stress">Low</div>
+                        <div class="indicator-change" id="stress-change">Markets calm</div>
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <h4>Economic Impact Assessment:</h4>
+                    <p id="central-bank-results">Welcome to the Central Bank Governor Simulator! Select a crisis scenario and use Keynes's Theory of Liquidity Preference to navigate the trade-offs between money and bonds. Your decisions affect interest rates instantly, which then cascade through investment, exchange rates, and the real economy.</p>
+                </div>
+
+                <div class="explanation">
+                    <h4>Theory of Liquidity Preference in Action</h4>
+                    <p><strong>The Core Trade-off:</strong> People choose between holding money (liquid but earns no interest) and bonds (earn interest but less liquid). When you increase money supply, interest rates fall because people have more cash than they want - they buy bonds, driving bond prices up and yields down. When rates fall, investment rises and the dollar weakens, boosting net exports.</p>
+                </div>
+
+                <div class="explanation">
+                    <h4>Real-World Policy Challenges</h4>
+                    <p><strong>The COVID Response:</strong> In 2020, the Bank of Canada increased its balance sheet from $120B to over $500B in a matter of months. This massive "monetary injection" kept interest rates near zero and prevented financial markets from seizing up. But it also demonstrates the <em>impossible trinity</em>: you cannot simultaneously control money supply, exchange rates, and have free capital flows.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Economic simulation state
+        let currentEra = '1920s';
+        let economicState = {
+            '1920s': {
+                taxRate: 25,
+                moneySupply: 60,
+                interestRate: 'low',
+                stockMarket: 120,
+                gdp: 4.2,
+                unemployment: 3.7,
+                inflation: 1.8
+            },
+            '1930s': {
+                policy: 'minimal',
+                trade: 'protectionist',
+                banking: 'hands-off',
+                gdp: 577,
+                unemployment: 25,
+                investment: 16,
+                prices: 85
+            },
+            'phillips': {
+                expectedInflation: 3.0,
+                actualInflation: 3.0,
+                supplyShock: 'none',
+                naturalUnemployment: 6.0,
+                currentUnemployment: 6.0,
+                inflationGap: 0.0
+            },
+            '1970s': {
+                oilPrice: 10.11,
+                fedResponse: 'neutral',
+                inflation: 9.2,
+                unemployment: 7.5,
+                gdp: -1.2
+            },
+            '1980s': {
+                fedFunds: 10.0,
+                credibility: 'moderate',
+                inflation: 10.3,
+                unemployment: 7.2,
+                expectedInflation: 9.8,
+                realGDP: 2.1
+            },
+            'modern': {
+                weatherShock: 'none',
+                geopoliticalShock: 'none',
+                fedResponse: 'moderate',
+                coreInflation: 2.7,
+                foodInflation: 8.2,
+                inequalityImpact: 'High',
+                fedCredibility: 'Stable',
+                foodPrices: {
+                    vegetables: 8,
+                    eggs: 5,
+                    coffee: 55,
+                    cocoa: 300,
+                    rice: 48
+                }
+            },
+            'future-work': {
+                aiAdoption: 'moderate',
+                corporatePolicy: 'balanced',
+                workerSupport: 'retraining',
+                displacementRate: 15,
+                avgCompanySize: 2400,
+                careerPathIndex: 75,
+                innovationRate: 'High',
+                employmentDistribution: {
+                    megaCorp: 33,     // 10,000+ employees (historical ~33% post-WWII)
+                    largeFirm: 25,    // 1,000-10,000 employees
+                    mediumFirm: 27,   // 100-1,000 employees  
+                    leanCompany: 15   // <100 employees (growing due to AI)
+                }
+            },
+            'central-bank': {
+                crisis: 'recession',
+                moneySupplyChange: 0,
+                bondPurchases: 100,
+                priceLevel: 100,
+                incomeLevel: 100,
+                interestRate: 4.5,
+                investmentLevel: 100,
+                exchangeRate: 0.75,
+                netExports: 100,
+                aggregateDemand: 100,
+                moneyDemand: 100,
+                bondPrices: 100,
+                financialStress: 'low'
+            }
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            updateDisplay();
+            drawPhillipsCurve();
+        });
+
+        function setupEventListeners() {
+            // Era navigation
+            document.querySelectorAll('.era-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const era = this.getAttribute('data-era');
+                    switchEra(era);
+                });
+            });
+
+            // 1920s controls
+            const taxSlider = document.getElementById('tax-rate-1920s');
+            if (taxSlider) {
+                taxSlider.addEventListener('input', function() {
+                    economicState['1920s'].taxRate = parseInt(this.value);
+                    updateDisplay();
+                });
+            }
+
+            const moneySlider = document.getElementById('money-supply-1920s');
+            if (moneySlider) {
+                moneySlider.addEventListener('input', function() {
+                    economicState['1920s'].moneySupply = parseInt(this.value);
+                    updateDisplay();
+                });
+            }
+
+            // Phillips curve controls
+            const expectedInflationSlider = document.getElementById('expected-inflation');
+            if (expectedInflationSlider) {
+                expectedInflationSlider.addEventListener('input', function() {
+                    economicState.phillips.expectedInflation = parseFloat(this.value);
+                    updatePhillipsCurve();
+                    updateDisplay();
+                });
+            }
+
+            const actualInflationSlider = document.getElementById('actual-inflation');
+            if (actualInflationSlider) {
+                actualInflationSlider.addEventListener('input', function() {
+                    economicState.phillips.actualInflation = parseFloat(this.value);
+                    updatePhillipsCurve();
+                    updateDisplay();
+                });
+            }
+
+            // Oil crisis controls
+            const oilPriceSlider = document.getElementById('oil-price-shock');
+            if (oilPriceSlider) {
+                oilPriceSlider.addEventListener('input', function() {
+                    const oilPrices = [3.56, 5.12, 10.11, 14.85, 18.23, 25.67, 32.50, 35.89, 38.00, 40.12];
+                    economicState['1970s'].oilPrice = oilPrices[parseInt(this.value) - 1];
+                    update1970sScenario();
+                    updateDisplay();
+                });
+            }
+
+            // Volcker era controls
+            const fedFundsSlider = document.getElementById('fed-funds-rate');
+            if (fedFundsSlider) {
+                fedFundsSlider.addEventListener('input', function() {
+                    economicState['1980s'].fedFunds = parseFloat(this.value);
+                    updateVolckerScenario();
+                    updateDisplay();
+                });
+            }
+
+            // Fiscal Policy Lab controls
+            const govSpendingSlider = document.getElementById('government-spending');
+            if (govSpendingSlider) {
+                govSpendingSlider.addEventListener('input', function() {
+                    updateFiscalLabScenario();
+                    updateDisplay();
+                });
+            }
+
+            const taxPolicySlider = document.getElementById('tax-policy');
+            if (taxPolicySlider) {
+                taxPolicySlider.addEventListener('input', function() {
+                    updateFiscalLabScenario();
+                    updateDisplay();
+                });
+            }
+
+            const mpcSlider = document.getElementById('mpc-slider');
+            if (mpcSlider) {
+                mpcSlider.addEventListener('input', function() {
+                    updateFiscalLabScenario();
+                    updateDisplay();
+                });
+            }
+
+            // Central Bank Governor controls
+            const crisisScenarioSelect = document.getElementById('crisis-scenario');
+            if (crisisScenarioSelect) {
+                crisisScenarioSelect.addEventListener('change', function() {
+                    economicState['central-bank'].crisis = this.value;
+                    updateCentralBankScenario();
+                    updateDisplay();
+                });
+            }
+
+            const moneySupplyPolicySlider = document.getElementById('money-supply-policy');
+            if (moneySupplyPolicySlider) {
+                moneySupplyPolicySlider.addEventListener('input', function() {
+                    economicState['central-bank'].moneySupplyChange = parseInt(this.value);
+                    updateCentralBankScenario();
+                    updateDisplay();
+                });
+            }
+
+            const bondPurchasesSlider = document.getElementById('bond-purchases');
+            if (bondPurchasesSlider) {
+                bondPurchasesSlider.addEventListener('input', function() {
+                    economicState['central-bank'].bondPurchases = parseInt(this.value);
+                    updateCentralBankScenario();
+                    updateDisplay();
+                });
+            }
+
+            const priceLevelCbSlider = document.getElementById('price-level-cb');
+            if (priceLevelCbSlider) {
+                priceLevelCbSlider.addEventListener('input', function() {
+                    economicState['central-bank'].priceLevel = parseInt(this.value);
+                    updateCentralBankScenario();
+                    updateDisplay();
+                });
+            }
+
+            const incomeLevelCbSlider = document.getElementById('income-level-cb');
+            if (incomeLevelCbSlider) {
+                incomeLevelCbSlider.addEventListener('input', function() {
+                    economicState['central-bank'].incomeLevel = parseInt(this.value);
+                    updateCentralBankScenario();
+                    updateDisplay();
+                });
+            }
+        }
+
+        function switchEra(era) {
+            // Update navigation
+            document.querySelectorAll('.era-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-era="${era}"]`).classList.add('active');
+
+            // Hide all scenarios
+            document.querySelectorAll('.scenario').forEach(scenario => scenario.classList.remove('active'));
+            
+            // Show selected scenario
+            document.getElementById(`scenario-${era}`).classList.add('active');
+            
+            currentEra = era;
+            updateDisplay();
+
+            // Special handling for Phillips curve
+            if (era === 'phillips') {
+                setTimeout(drawPhillipsCurve, 100);
+            }
+        }
+
+        function updateDisplay() {
+            if (currentEra === '1920s') {
+                update1920sDisplay();
+            } else if (currentEra === '1930s') {
+                updateDepressionDisplay();
+            } else if (currentEra === 'phillips') {
+                updatePhillipsDisplay();
+            } else if (currentEra === '1970s') {
+                update1970sDisplay();
+            } else if (currentEra === '1980s') {
+                updateVolckerDisplay();
+            } else if (currentEra === 'modern') {
+                updateModernDisplay();
+            } else if (currentEra === 'future-work') {
+                updateFutureWorkDisplay();
+            } else if (currentEra === 'fiscal-lab') {
+                updateFiscalLabDisplay();
+            } else if (currentEra === 'central-bank') {
+                updateCentralBankDisplay();
+            }
+        }
+
+        function update1920sDisplay() {
+            const state = economicState['1920s'];
+            
+            // Update slider displays
+            const taxDisplay = document.getElementById('tax-display-1920s');
+            const moneyDisplay = document.getElementById('money-display-1920s');
+            
+            if (taxDisplay) taxDisplay.textContent = `${state.taxRate}%`;
+            if (moneyDisplay) moneyDisplay.textContent = `${state.moneySupply}%`;
+
+            // Calculate economic effects
+            const taxEffect = (75 - state.taxRate) / 50; // Lower taxes boost economy
+            const moneyEffect = state.moneySupply / 100; // More money = more growth but also bubbles
+            
+            // Update economic indicators
+            state.gdp = Math.round((2.5 + taxEffect * 2 + moneyEffect * 1.5) * 10) / 10;
+            state.unemployment = Math.round((5.5 - taxEffect * 1.5 - moneyEffect * 0.8) * 10) / 10;
+            state.inflation = Math.round((0.5 + moneyEffect * 2.5) * 10) / 10;
+            state.stockMarket = Math.round(80 + taxEffect * 40 + moneyEffect * 60 + 
+                (state.interestRate === 'low' ? 40 : state.interestRate === 'moderate' ? 0 : -30));
+
+            // Update display elements
+            updateElement('stock-market-1920s', state.stockMarket);
+            updateElement('gdp-1920s', state.gdp);
+            updateElement('unemployment-1920s', state.unemployment);
+            updateElement('inflation-1920s', state.inflation);
+
+            // Update consequences
+            let consequences = "";
+            if (state.stockMarket > 200) {
+                consequences = "⚠️ BUBBLE ALERT: Excessive speculation is creating dangerous market conditions. A crash may be imminent if interest rates rise or trade policies change.";
+            } else if (state.gdp > 5) {
+                consequences = "📈 Strong economic growth with new technologies driving prosperity. However, watch for signs of overheating in asset markets.";
+            } else {
+                consequences = "📊 Moderate growth with stable conditions. Consider whether more stimulus might boost innovation and employment.";
+            }
+            
+            updateElement('consequences-1920s', consequences);
+        }
+
+        function setInterestRate(level) {
+            economicState['1920s'].interestRate = level;
+            update1920sDisplay();
+            
+            // Show immediate market reaction
+            const consequences = document.getElementById('consequences-1920s');
+            if (level === 'high' && economicState['1920s'].stockMarket > 150) {
+                consequences.textContent = "💥 MARKET CRASH! Higher interest rates have burst the speculative bubble. The Dow has lost 30% in days, just like October 1929!";
+                consequences.style.backgroundColor = '#f8d7da';
+                consequences.style.borderColor = '#f5c6cb';
+            }
+        }
+
+        function updateDepressionDisplay() {
+            // This would be implemented with historical GDP data
+            // For now, showing static historical values from the PDF
+        }
+
+        function setDepression(policy) {
+            economicState['1930s'].policy = policy;
+            const results = document.getElementById('depression-results');
+            
+            switch(policy) {
+                case 'minimal':
+                    results.textContent = "Minimal government intervention is prolonging the depression. Unemployment remains above 20% and deflation is worsening debt burdens. Recovery will be very slow.";
+                    break;
+                case 'moderate':
+                    results.textContent = "New Deal programs are providing some relief and employment, but recovery is gradual. Public works and banking reforms are helping restore confidence.";
+                    break;
+                case 'massive':
+                    results.textContent = "Massive government spending is accelerating recovery, similar to what WWII eventually accomplished. Unemployment is falling faster but debt is rising.";
+                    break;
+            }
+        }
+
+        function setTrade(policy) {
+            economicState['1930s'].trade = policy;
+            const results = document.getElementById('depression-results');
+            const state = economicState['1930s'];
+            
+            // Update economic indicators based on trade policy
+            switch(policy) {
+                case 'protectionist':
+                    // Smoot-Hawley Act effects from PDF
+                    state.gdp = Math.max(400, state.gdp - 50); // GDP falls due to reduced trade
+                    state.unemployment = Math.min(35, state.unemployment + 5); // Unemployment rises
+                    results.textContent = "The Smoot-Hawley Act is backfiring! Tariffs on thousands of goods triggered retaliation from trading partners. World trade has declined by 66% over 5 years, deepening the depression and increasing unemployment.";
+                    results.style.backgroundColor = '#f8d7da';
+                    results.style.color = '#721c24';
+                    break;
+                case 'neutral':
+                    // Maintain current trade levels
+                    results.textContent = "Maintaining current trade policy provides stability but misses opportunities for economic recovery through international cooperation and trade expansion.";
+                    results.style.backgroundColor = '#fff3cd';
+                    results.style.color = '#856404';
+                    break;
+                case 'free':
+                    // Reduce barriers, boost recovery
+                    state.gdp = Math.min(700, state.gdp + 30); // GDP improves with trade
+                    state.unemployment = Math.max(15, state.unemployment - 3); // Unemployment falls
+                    results.textContent = "Reducing trade barriers is helping recovery! International trade is expanding, creating jobs and economic growth. This approach mirrors the later GATT agreements that helped post-war prosperity.";
+                    results.style.backgroundColor = '#d1edff';
+                    results.style.color = '#0c5460';
+                    break;
+            }
+            
+            // Update the display
+            updateElement('gdp-depression', state.gdp);
+            updateElement('unemployment-depression', state.unemployment);
+            updateElement('gdp-change-depression', `${state.gdp < 577 ? '-' : '+'}${Math.abs(577 - state.gdp)}B`);
+            updateElement('unemployment-change-depression', `${state.unemployment > 25 ? '+' : ''}${(state.unemployment - 25).toFixed(0)}%`);
+        }
+
+        function setBanking(policy) {
+            economicState['1930s'].banking = policy;
+            const results = document.getElementById('depression-results');
+            const state = economicState['1930s'];
+            
+            // Update economic indicators based on banking policy
+            switch(policy) {
+                case 'hands-off':
+                    // Let banks fail - worsens depression
+                    state.investment = Math.max(5, state.investment - 5); // Investment collapses further
+                    state.unemployment = Math.min(35, state.unemployment + 3); // More unemployment
+                    const handsOffText = " Banking failures are accelerating as depositors panic and banks hold excess reserves. The money supply is collapsing further, deepening deflation and making debt burdens worse.";
+                    results.textContent += handsOffText;
+                    results.style.backgroundColor = '#f8d7da';
+                    results.style.color = '#721c24';
+                    break;
+                case 'regulate':
+                    // Glass-Steagall Act - provides stability
+                    state.investment = Math.min(40, state.investment + 8); // Investment recovers with confidence
+                    state.unemployment = Math.max(18, state.unemployment - 2); // Some improvement
+                    const regulateText = " The Glass-Steagall Act is restoring confidence in the banking system. Heavy regulations separate commercial and investment banking, while deposit insurance prevents bank runs. Recovery is gradual but steady.";
+                    results.textContent += regulateText;
+                    results.style.backgroundColor = '#d1edff';
+                    results.style.color = '#0c5460';
+                    break;
+                case 'support':
+                    // Direct government support - fastest recovery
+                    state.investment = Math.min(50, state.investment + 15); // Strong investment recovery
+                    state.unemployment = Math.max(15, state.unemployment - 4); // Significant improvement
+                    const supportText = " Direct government support for banks is rapidly restoring the financial system. Government-backed mortgages and bank recapitalization are getting credit flowing again, accelerating economic recovery.";
+                    results.textContent += supportText;
+                    results.style.backgroundColor = '#d4edda';
+                    results.style.color = '#155724';
+                    break;
+            }
+            
+            // Update the display
+            updateElement('investment-depression', state.investment);
+            updateElement('unemployment-depression', state.unemployment);
+            updateElement('investment-change-depression', `${state.investment > 16 ? '+' : ''}${(((state.investment - 16) / 16) * 100).toFixed(0)}%`);
+            updateElement('unemployment-change-depression', `${state.unemployment > 25 ? '+' : ''}${(state.unemployment - 25).toFixed(0)}%`);
+        }
+
+        function updatePhillipsDisplay() {
+            const state = economicState.phillips;
+            
+            // Update slider displays
+            updateElement('expected-inflation-display', `${state.expectedInflation.toFixed(1)}%`);
+            updateElement('actual-inflation-display', `${state.actualInflation.toFixed(1)}%`);
+            
+            // Update indicators
+            updateElement('natural-unemployment', `${state.naturalUnemployment.toFixed(1)}`);
+            updateElement('current-unemployment', `${state.currentUnemployment.toFixed(1)}`);
+            updateElement('inflation-gap', `${state.inflationGap.toFixed(1)}`);
+        }
+
+        function updatePhillipsCurve() {
+            const state = economicState.phillips;
+            
+            // Calculate unemployment based on Phillips Curve equation
+            // U rate = Natural rate of U - a(Actual inflation - Expected inflation)
+            const a = 2.0; // Sensitivity parameter
+            state.inflationGap = state.actualInflation - state.expectedInflation;
+            state.currentUnemployment = state.naturalUnemployment - a * state.inflationGap;
+            
+            // Ensure unemployment doesn't go below 1% or above 15%
+            state.currentUnemployment = Math.max(1, Math.min(15, state.currentUnemployment));
+            
+            drawPhillipsCurve();
+        }
+
+        function drawPhillipsCurve() {
+            const container = document.getElementById('phillips-curve');
+            if (!container) return;
+
+            // Clear existing points
+            container.querySelectorAll('.curve-point').forEach(point => point.remove());
+
+            const state = economicState.phillips;
+            const width = container.offsetWidth;
+            const height = container.offsetHeight;
+
+            // Draw curve points for different expected inflation levels
+            for (let expectedInf = 0; expectedInf <= 8; expectedInf += 2) {
+                for (let actualInf = 0; actualInf <= 12; actualInf += 0.5) {
+                    const unemploymentRate = 6 - 2 * (actualInf - expectedInf);
+                    
+                    if (unemploymentRate >= 1 && unemploymentRate <= 12) {
+                        const point = document.createElement('div');
+                        point.className = 'curve-point';
+                        
+                        // Position point (convert economic values to pixel coordinates)
+                        const x = (unemploymentRate / 12) * width;
+                        const y = height - (actualInf / 12) * height;
+                        
+                        point.style.left = `${x}px`;
+                        point.style.top = `${y}px`;
+                        
+                        container.appendChild(point);
+                    }
+                }
+            }
+
+            // Add current point
+            const currentPoint = document.createElement('div');
+            currentPoint.className = 'curve-point current-point';
+            
+            const currentX = (state.currentUnemployment / 12) * width;
+            const currentY = height - (state.actualInflation / 12) * height;
+            
+            currentPoint.style.left = `${currentX}px`;
+            currentPoint.style.top = `${currentY}px`;
+            
+            container.appendChild(currentPoint);
+        }
+
+        function applySupplyShock(severity) {
+            const state = economicState.phillips;
+            
+            switch(severity) {
+                case 'none':
+                    state.naturalUnemployment = 6.0;
+                    break;
+                case 'mild':
+                    state.naturalUnemployment = 7.0;
+                    break;
+                case 'severe':
+                    state.naturalUnemployment = 8.5;
+                    break;
+            }
+            
+            updatePhillipsCurve();
+            updateDisplay();
+        }
+
+        function update1970sScenario() {
+            const state = economicState['1970s'];
+            
+            // Oil price effect on inflation and unemployment
+            const oilEffect = (state.oilPrice - 3.56) / 35; // Normalized oil price impact
+            
+            state.inflation = 5 + oilEffect * 8; // Base inflation + oil impact
+            state.unemployment = 5.5 + oilEffect * 3; // Base unemployment + oil impact
+            state.gdp = 3 - oilEffect * 5; // Base growth - oil impact
+        }
+
+        function update1970sDisplay() {
+            const state = economicState['1970s'];
+            
+            updateElement('oil-price-display', state.oilPrice.toFixed(2));
+            updateElement('inflation-1970s', state.inflation.toFixed(1));
+            updateElement('unemployment-1970s', state.unemployment.toFixed(1));
+            updateElement('gdp-1970s', state.gdp.toFixed(1));
+            updateElement('misery-index', (state.inflation + state.unemployment).toFixed(1));
+        }
+
+        function setFedResponse(response) {
+            economicState['1970s'].fedResponse = response;
+            const results = document.getElementById('stagflation-results');
+            
+            switch(response) {
+                case 'accommodate':
+                    results.textContent = "Accommodating the supply shock with easier money reduces unemployment in the short run but risks entrenching higher inflation expectations, making future disinflation more costly.";
+                    break;
+                case 'neutral':
+                    results.textContent = "Staying neutral allows both inflation and unemployment to rise temporarily, but avoids worsening either problem significantly.";
+                    break;
+                case 'fight':
+                    results.textContent = "Fighting inflation aggressively will reduce inflation but at the cost of even higher unemployment in the short run. This is the painful medicine needed to prevent stagflation from becoming entrenched.";
+                    break;
+            }
+        }
+
+        function updateVolckerScenario() {
+            const state = economicState['1980s'];
+            
+            // Higher interest rates reduce inflation but increase unemployment
+            const rateEffect = (state.fedFunds - 5) / 15; // Normalized rate effect
+            
+            // Credibility affects how quickly expectations adjust
+            const credibilityMultiplier = {
+                'weak': 0.3,
+                'moderate': 0.6,
+                'strong': 1.0
+            }[state.credibility] || 0.6;
+            
+            state.inflation = 10.3 - rateEffect * 6 * credibilityMultiplier;
+            state.unemployment = 7.2 + rateEffect * 4;
+            state.expectedInflation = 9.8 - rateEffect * 3 * credibilityMultiplier;
+            state.realGDP = 2.1 - rateEffect * 5;
+            
+            // Calculate sacrifice ratio
+            const inflationReduction = Math.max(0, 10.3 - state.inflation);
+            const outputLoss = Math.max(0, 2.1 - state.realGDP);
+            const sacrificeRatio = inflationReduction > 0 ? outputLoss / inflationReduction : 0;
+            
+            document.getElementById('sacrifice-ratio').textContent = sacrificeRatio.toFixed(1);
+            document.getElementById('total-sacrifice').textContent = (sacrificeRatio * 6).toFixed(1); // Assuming 6% disinflation target
+        }
+
+        function updateVolckerDisplay() {
+            const state = economicState['1980s'];
+            
+            updateElement('fed-funds-display', `${state.fedFunds.toFixed(1)}%`);
+            updateElement('inflation-1980s', state.inflation.toFixed(1));
+            updateElement('unemployment-1980s', state.unemployment.toFixed(1));
+            updateElement('expected-inflation-1980s', state.expectedInflation.toFixed(1));
+            updateElement('real-gdp-1980s', state.realGDP.toFixed(1));
+        }
+
+        function setCredibility(level) {
+            economicState['1980s'].credibility = level;
+            updateVolckerScenario();
+            updateDisplay();
+            
+            const results = document.getElementById('disinflation-results');
+            switch(level) {
+                case 'weak':
+                    results.textContent = "Weak credibility means expectations adjust slowly. The sacrifice ratio is high as people don't believe the Fed's commitment to low inflation.";
+                    break;
+                case 'moderate':
+                    results.textContent = "Moderate credibility provides some benefit. Clear communication helps expectations adjust more quickly than otherwise.";
+                    break;
+                case 'strong':
+                    results.textContent = "Strong credibility dramatically reduces the sacrifice ratio. The 'Volcker shock' approach convinces markets that the Fed is serious about defeating inflation.";
+                    break;
+            }
+        }
+
+        // Modern Crisis Functions
+        function setWeatherShock(type) {
+            economicState.modern.weatherShock = type;
+            updateModernShocks();
+            updateDisplay();
+        }
+
+        function setGeopoliticalShock(type) {
+            economicState.modern.geopoliticalShock = type;
+            updateModernShocks();
+            updateDisplay();
+        }
+
+        function setModernFedResponse(type) {
+            economicState.modern.fedResponse = type;
+            updateModernFedPolicy();
+            updateDisplay();
+        }
+
+        function updateModernShocks() {
+            const state = economicState.modern;
+            const results = document.getElementById('modern-crisis-results');
+            
+            // Reset food prices to baseline
+            state.foodPrices = {
+                vegetables: 8,
+                eggs: 5,
+                coffee: 55,
+                cocoa: 300,
+                rice: 48
+            };
+
+            // Apply weather shock effects based on article data
+            switch(state.weatherShock) {
+                case 'drought':
+                    // California drought (40% of US vegetables) - 80% increase from article
+                    state.foodPrices.vegetables = Math.min(100, state.foodPrices.vegetables * 1.8);
+                    state.foodPrices.coffee = Math.min(120, state.foodPrices.coffee * 1.2);
+                    results.textContent = "California drought is devastating vegetable production. With California producing 40% of US vegetables, prices are surging 80% year-over-year as mentioned in recent research.";
+                    results.style.backgroundColor = '#f8d7da';
+                    results.style.color = '#721c24';
+                    break;
+                case 'hurricane':
+                    // Florida hurricanes affecting citrus and eggs
+                    state.foodPrices.eggs = Math.min(80, state.foodPrices.eggs * 2.5);
+                    state.foodPrices.vegetables = Math.min(60, state.foodPrices.vegetables * 1.3);
+                    results.textContent = "Florida hurricanes have disrupted citrus production and poultry farms. Egg prices are spiking due to supply chain disruptions and facility damage.";
+                    results.style.backgroundColor = '#fff3cd';
+                    results.style.color = '#856404';
+                    break;
+                case 'global':
+                    // Global heatwaves affecting multiple crops
+                    state.foodPrices.rice = Math.min(90, state.foodPrices.rice * 1.5); // Japan heatwave +48% from article
+                    state.foodPrices.cocoa = Math.min(400, state.foodPrices.cocoa * 1.1); // Ghana/Ivory Coast +300% from article
+                    state.foodPrices.coffee = Math.min(150, state.foodPrices.coffee * 1.3);
+                    results.textContent = "Global heatwaves are hitting major agricultural regions. Japan's rice prices up 48%, while Ghana/Ivory Coast cocoa crisis (60% of world supply) drives chocolate prices up 300%.";
+                    results.style.backgroundColor = '#f8d7da';
+                    results.style.color = '#721c24';
+                    break;
+                case 'none':
+                default:
+                    results.textContent = "Normal weather conditions are supporting stable agricultural production. Food price increases remain within typical seasonal variation ranges.";
+                    results.style.backgroundColor = '#d4edda';
+                    results.style.color = '#155724';
+                    break;
+            }
+
+            // Apply geopolitical shock effects
+            switch(state.geopoliticalShock) {
+                case 'ukraine':
+                    // Ukraine war affects grain and energy
+                    state.foodPrices.vegetables = Math.min(100, state.foodPrices.vegetables * 1.4);
+                    state.foodPrices.eggs = Math.min(60, state.foodPrices.eggs * 1.6);
+                    results.textContent += " Ukraine war is disrupting grain exports and increasing energy costs, amplifying food inflation through higher transportation and fertilizer costs.";
+                    break;
+                case 'pandemic':
+                    // Supply chain disruptions
+                    Object.keys(state.foodPrices).forEach(key => {
+                        state.foodPrices[key] = Math.min(120, state.foodPrices[key] * 1.25);
+                    });
+                    results.textContent += " Pandemic supply chain disruptions are creating bottlenecks in food distribution, affecting all categories with labor shortages and logistics delays.";
+                    break;
+                case 'suez':
+                    // Trade route disruption
+                    state.foodPrices.coffee = Math.min(100, state.foodPrices.coffee * 1.3);
+                    state.foodPrices.cocoa = Math.min(450, state.foodPrices.cocoa * 1.15);
+                    results.textContent += " Suez Canal disruption is delaying global food shipments, particularly affecting imported commodities like coffee and cocoa.";
+                    break;
+            }
+
+            // Calculate overall food inflation
+            const avgIncrease = Object.values(state.foodPrices).reduce((a, b) => a + b, 0) / 5;
+            state.foodInflation = Math.min(25, Math.max(3, avgIncrease * 0.15));
+            
+            // Update core inflation (less affected by food)
+            state.coreInflation = Math.min(6, 2.7 + (state.foodInflation - 8) * 0.1);
+
+            updateFoodPriceChart();
+        }
+
+        function updateModernFedPolicy() {
+            const state = economicState.modern;
+            const results = document.getElementById('modern-crisis-results');
+
+            switch(state.fedResponse) {
+                case 'dovish':
+                    state.fedCredibility = 'Questioned';
+                    results.textContent += " The Fed is 'looking through' food price increases, treating them as temporary supply shocks. This maintains low interest rates but risks inflation expectations becoming unanchored.";
+                    break;
+                case 'moderate':
+                    state.fedCredibility = 'Stable';
+                    results.textContent += " The Fed is taking a balanced approach, gradually tightening policy to prevent food inflation from spreading to other sectors while acknowledging supply-side constraints.";
+                    break;
+                case 'hawkish':
+                    state.fedCredibility = 'Strong';
+                    results.textContent += " The Fed is aggressively fighting food-driven inflation, risking recession to prevent inflation expectations from becoming entrenched. This may hurt low-income families disproportionately.";
+                    break;
+            }
+        }
+
+        function updateModernDisplay() {
+            const state = economicState.modern;
+            
+            // Update main indicators
+            updateElement('core-inflation-modern', state.coreInflation.toFixed(1));
+            updateElement('food-inflation-modern', state.foodInflation.toFixed(1));
+            updateElement('inequality-impact', state.inequalityImpact);
+            updateElement('fed-credibility-modern', state.fedCredibility);
+
+            // Update inequality impact based on food inflation
+            if (state.foodInflation > 15) {
+                state.inequalityImpact = 'Severe';
+                updateElement('inequality-change', '20% of budget');
+            } else if (state.foodInflation > 10) {
+                state.inequalityImpact = 'High';
+                updateElement('inequality-change', '15% of budget');
+            } else {
+                state.inequalityImpact = 'Moderate';
+                updateElement('inequality-change', '12% of budget');
+            }
+
+            updateFoodPriceChart();
+        }
+
+        function updateFoodPriceChart() {
+            const state = economicState.modern;
+            const maxPrice = 400; // For cocoa reference
+
+            Object.keys(state.foodPrices).forEach(food => {
+                const percentage = Math.min(100, (state.foodPrices[food] / maxPrice) * 100);
+                const barElement = document.getElementById(`${food}-bar`);
+                const priceElement = document.getElementById(`${food}-price`);
+                
+                if (barElement) {
+                    barElement.style.width = `${percentage}%`;
+                }
+                
+                if (priceElement) {
+                    priceElement.textContent = `+${state.foodPrices[food].toFixed(0)}%`;
+                    
+                    // Color code based on severity
+                    if (state.foodPrices[food] > 50) {
+                        priceElement.style.color = '#dc3545'; // Red
+                    } else if (state.foodPrices[food] > 20) {
+                        priceElement.style.color = '#ffc107'; // Yellow
+                    } else {
+                        priceElement.style.color = '#28a745'; // Green
+                    }
+                }
+            });
+        }
+
+        // Future of Work Functions
+        function setAIAdoption(type) {
+            economicState['future-work'].aiAdoption = type;
+            updateFutureWorkScenario();
+            updateDisplay();
+        }
+        
+        function setCorporatePolicy(type) {
+            economicState['future-work'].corporatePolicy = type;
+            updateFutureWorkScenario();
+            updateDisplay();
+        }
+        
+        function setWorkerSupport(type) {
+            economicState['future-work'].workerSupport = type;
+            updateFutureWorkScenario();
+            updateDisplay();
+        }
+        
+        function updateFutureWorkScenario() {
+            const state = economicState['future-work'];
+            const results = document.getElementById('future-work-results');
+            
+            // Reset to baseline
+            state.employmentDistribution = {
+                megaCorp: 33,
+                largeFirm: 25,
+                mediumFirm: 27,
+                leanCompany: 15
+            };
+            state.displacementRate = 15;
+            state.avgCompanySize = 2400;
+            state.careerPathIndex = 75;
+            state.innovationRate = 'High';
+            
+            // Apply AI adoption effects based on article data
+            switch(state.aiAdoption) {
+                case 'slow':
+                    // Gradual change, companies still growing
+                    state.displacementRate = 8;
+                    state.avgCompanySize = 2800;
+                    state.careerPathIndex = 85;
+                    state.innovationRate = 'Moderate';
+                    results.textContent = "Gradual AI adoption is allowing time for worker retraining and adaptation. Traditional mega-employers maintain their workforce but with slower efficiency gains and innovation.";
+                    results.style.backgroundColor = '#d4edda';
+                    results.style.color = '#155724';
+                    break;
+                case 'rapid':
+                    // Aggressive automation like Amazon/Meta layoffs
+                    state.displacementRate = 40; // Ford CEO said "literally half" of white-collar jobs
+                    state.avgCompanySize = 1200; // Much smaller average
+                    state.careerPathIndex = 45; // Severely reduced career paths
+                    state.innovationRate = 'Very High';
+                    // Shift employment distribution dramatically
+                    state.employmentDistribution.megaCorp = 15; // Down from 33%
+                    state.employmentDistribution.largeFirm = 20;
+                    state.employmentDistribution.mediumFirm = 35;
+                    state.employmentDistribution.leanCompany = 30; // Up from 15%
+                    results.textContent = "Rapid AI automation is causing massive workforce reductions. Like Amazon's 350,000 corporate employees facing 'efficiency gains,' companies are achieving more with far fewer people. Innovation accelerates but career paths disappear.";
+                    results.style.backgroundColor = '#f8d7da';
+                    results.style.color = '#721c24';
+                    break;
+                case 'moderate':
+                default:
+                    // Market-led adoption with some displacement
+                    state.displacementRate = 15;
+                    state.avgCompanySize = 2000; // Modest reduction
+                    state.careerPathIndex = 70;
+                    // Moderate shift toward lean companies
+                    state.employmentDistribution.megaCorp = 28; // Down from 33%
+                    state.employmentDistribution.largeFirm = 23;
+                    state.employmentDistribution.mediumFirm = 29;
+                    state.employmentDistribution.leanCompany = 20; // Up from 15%
+                    results.textContent = "Market-driven AI adoption is creating moderate workforce transformation. Companies like Klarna (40% headcount reduction) and JPMorgan (10% operations reduction) show the trend toward leaner organizations.";
+                    results.style.backgroundColor = '#fff3cd';
+                    results.style.color = '#856404';
+                    break;
+            }
+            
+            // Apply corporate policy effects
+            switch(state.corporatePolicy) {
+                case 'status-quo':
+                    // Policies favor large employers
+                    state.employmentDistribution.megaCorp += 8;
+                    state.employmentDistribution.leanCompany -= 5;
+                    state.careerPathIndex += 10;
+                    state.innovationRate = state.innovationRate === 'Very High' ? 'High' : 'Moderate';
+                    results.textContent += " Government policies protect traditional mega-employers through regulations favoring large companies, slowing the transition but maintaining job security.";
+                    break;
+                case 'lean':
+                    // Policies encourage small, efficient companies
+                    state.employmentDistribution.megaCorp -= 8;
+                    state.employmentDistribution.leanCompany += 10;
+                    state.avgCompanySize *= 0.7;
+                    state.careerPathIndex -= 15;
+                    if (state.innovationRate === 'Moderate') state.innovationRate = 'High';
+                    else if (state.innovationRate === 'High') state.innovationRate = 'Very High';
+                    results.textContent += " Policies encourage lean, AI-powered companies through tax incentives and reduced regulations for small firms, accelerating innovation but reducing job security.";
+                    break;
+                case 'balanced':
+                default:
+                    // Moderate approach
+                    results.textContent += " Balanced policies support the transition while protecting workers, allowing market forces to drive change gradually.";
+                    break;
+            }
+            
+            // Apply worker support effects
+            switch(state.workerSupport) {
+                case 'minimal':
+                    // Market-based, high displacement impact
+                    state.careerPathIndex -= 10;
+                    results.textContent += " Minimal worker support relies on market mechanisms, creating hardship for displaced workers but maximizing efficiency gains.";
+                    break;
+                case 'ubi':
+                    // Universal Basic Income reduces displacement pain
+                    state.careerPathIndex += 15;
+                    state.displacementRate *= 1.2; // UBI allows more automation
+                    state.innovationRate = state.innovationRate === 'Moderate' ? 'High' : 'Very High';
+                    results.textContent += " Universal Basic Income provides security for displaced workers, enabling more aggressive AI adoption and innovation while maintaining social stability.";
+                    break;
+                case 'retraining':
+                default:
+                    // Retraining programs help transition
+                    state.careerPathIndex += 5;
+                    state.displacementRate *= 0.9; // Some workers successfully retrain
+                    results.textContent += " Comprehensive retraining programs help workers transition to new roles, moderating displacement while building skills for the AI economy.";
+                    break;
+            }
+            
+            // Ensure values stay within bounds
+            state.employmentDistribution.megaCorp = Math.max(5, Math.min(50, state.employmentDistribution.megaCorp));
+            state.employmentDistribution.leanCompany = Math.max(5, Math.min(60, state.employmentDistribution.leanCompany));
+            state.careerPathIndex = Math.max(20, Math.min(100, state.careerPathIndex));
+            state.displacementRate = Math.max(5, Math.min(60, state.displacementRate));
+            state.avgCompanySize = Math.max(500, Math.min(5000, state.avgCompanySize));
+            
+            updateEmploymentChart();
+        }
+        
+        function updateFutureWorkDisplay() {
+            const state = economicState['future-work'];
+            
+            // Update main indicators
+            updateElement('displacement-rate', state.displacementRate.toFixed(0));
+            updateElement('avg-company-size', Math.round(state.avgCompanySize).toLocaleString());
+            updateElement('career-path-index', state.careerPathIndex.toFixed(0));
+            updateElement('innovation-rate', state.innovationRate);
+            
+            // Update career path description based on index
+            let careerDescription;
+            if (state.careerPathIndex > 80) {
+                careerDescription = 'High stability';
+            } else if (state.careerPathIndex > 60) {
+                careerDescription = 'Moderate paths';
+            } else if (state.careerPathIndex > 40) {
+                careerDescription = 'Limited options';
+            } else {
+                careerDescription = 'Minimal security';
+            }
+            updateElement('career-change', careerDescription);
+            
+            // Update innovation description
+            let innovationDescription;
+            switch(state.innovationRate) {
+                case 'Very High': innovationDescription = 'Rapid disruption'; break;
+                case 'High': innovationDescription = 'Fast adaptation'; break;
+                case 'Moderate': innovationDescription = 'Steady progress'; break;
+                default: innovationDescription = 'Gradual change'; break;
+            }
+            updateElement('innovation-change', innovationDescription);
+            
+            updateEmploymentChart();
+        }
+        
+        function updateEmploymentChart() {
+            const state = economicState['future-work'];
+            const distribution = state.employmentDistribution;
+            
+            // Update employment distribution bars and percentages
+            const categories = ['megaCorp', 'largeFirm', 'mediumFirm', 'leanCompany'];
+            const ids = ['mega-corp', 'large-firm', 'medium-firm', 'lean-company'];
+            
+            categories.forEach((category, index) => {
+                const percentage = distribution[category];
+                const barElement = document.getElementById(`${ids[index]}-bar`);
+                const percentElement = document.getElementById(`${ids[index]}-percent`);
+                
+                if (barElement) {
+                    barElement.style.width = `${percentage}%`;
+                }
+                
+                if (percentElement) {
+                    percentElement.textContent = `${percentage}%`;
+                    
+                    // Color code based on change from historical baseline
+                    if (category === 'megaCorp') {
+                        // Red if declining significantly from historical 33%
+                        if (percentage < 25) {
+                            percentElement.style.color = '#dc3545';
+                        } else if (percentage < 30) {
+                            percentElement.style.color = '#ffc107';
+                        } else {
+                            percentElement.style.color = '#28a745';
+                        }
+                    } else if (category === 'leanCompany') {
+                        // Green if growing significantly from historical 15%
+                        if (percentage > 25) {
+                            percentElement.style.color = '#28a745';
+                        } else if (percentage > 20) {
+                            percentElement.style.color = '#ffc107';
+                        } else {
+                            percentElement.style.color = '#333';
+                        }
+                    } else {
+                        percentElement.style.color = '#333';
+                    }
+                }
+            });
+        }
+
+        // Fiscal Policy Lab Functions
+        function setFiscalCrisis(type) {
+            if (!economicState['fiscal-lab']) {
+                economicState['fiscal-lab'] = {
+                    crisis: type,
+                    governmentSpending: 0, taxPolicy: 0, mpc: 0.8, multiplier: 5.0,
+                    exchangeRegime: 'flexible', policyLag: 6, interestRateImpact: 0.5,
+                    budgetDeficit: 0, directEffect: 0, multiplierEffect: 0,
+                    crowdingOut: 0, exportEffect: 0, totalImpact: 0, policyEffectiveness: 'Moderate'
+                };
+            }
+            economicState['fiscal-lab'].crisis = type;
+            updateFiscalLabScenario();
+            updateDisplay();
+        }
+        
+        function setExchangeRegime(regime) {
+            economicState['fiscal-lab'].exchangeRegime = regime;
+            updateFiscalLabScenario();
+            updateDisplay();
+        }
+        
+        function updateFiscalLabScenario() {
+            const state = economicState['fiscal-lab'];
+            if (!state) return;
+            
+            const results = document.getElementById('fiscal-lab-results');
+            if (!results) return;
+            
+            // Calculate multiplier
+            state.multiplier = 1 / (1 - state.mpc);
+            
+            // Get current values from sliders
+            const govSpendingSlider = document.getElementById('government-spending');
+            const taxPolicySlider = document.getElementById('tax-policy');
+            const mpcSlider = document.getElementById('mpc-slider');
+            
+            if (govSpendingSlider) state.governmentSpending = parseInt(govSpendingSlider.value);
+            if (taxPolicySlider) state.taxPolicy = parseInt(taxPolicySlider.value);
+            if (mpcSlider) {
+                state.mpc = parseFloat(mpcSlider.value);
+                state.multiplier = 1 / (1 - state.mpc);
+            }
+            
+            // Calculate effects
+            state.directEffect = state.governmentSpending;
+            const spendingMultiplierEffect = (state.multiplier - 1) * state.governmentSpending;
+            const taxMultiplierEffect = (-state.mpc / (1 - state.mpc)) * state.taxPolicy;
+            state.multiplierEffect = spendingMultiplierEffect + taxMultiplierEffect;
+            
+            const fiscalExpansion = Math.abs(state.governmentSpending - state.taxPolicy);
+            state.crowdingOut = -fiscalExpansion * 0.3;
+            
+            if (state.exchangeRegime === 'flexible') {
+                state.exportEffect = -fiscalExpansion * 0.2;
+                state.crowdingOut *= 1.5;
+            } else {
+                state.exportEffect = 0;
+                state.crowdingOut *= 0.5;
+            }
+            
+            state.totalImpact = state.directEffect + state.multiplierEffect + state.crowdingOut + state.exportEffect;
+            state.budgetDeficit = state.governmentSpending - state.taxPolicy;
+            
+            // Update results based on crisis
+            switch(state.crisis) {
+                case 'recession':
+                    state.policyLag = 8;
+                    results.textContent = `RECESSION: GDP -3%. Your response: ΔG=$${state.governmentSpending}B, ΔT=$${state.taxPolicy}B. Total impact: $${state.totalImpact.toFixed(1)}B from multiplier (${state.multiplier.toFixed(1)}x) minus crowding-out effects.`;
+                    break;
+                case 'boom':
+                    state.policyLag = 6;
+                    results.textContent = `OVERHEATING: GDP +8%. Cool the economy: ΔG=$${state.governmentSpending}B, ΔT=$${state.taxPolicy}B. Total impact: $${state.totalImpact.toFixed(1)}B.`;
+                    break;
+                case 'stagflation':
+                    state.policyLag = 12;
+                    results.textContent = `STAGFLATION: High inflation + unemployment. Fiscal policy dilemma: ΔG=$${state.governmentSpending}B, ΔT=$${state.taxPolicy}B. Limited effectiveness due to supply-side nature.`;
+                    break;
+            }
+            
+            updateFiscalImpactChart();
+        }
+        
+        function updateFiscalLabDisplay() {
+            const state = economicState['fiscal-lab'];
+            if (!state) return;
+            
+            updateElement('spending-display', `$${state.governmentSpending}B`);
+            updateElement('tax-display', `$${state.taxPolicy}B`);
+            updateElement('mpc-display', state.mpc.toFixed(2));
+            updateElement('multiplier-display', state.multiplier.toFixed(1));
+            updateElement('policy-lag', state.policyLag.toString());
+            updateElement('budget-deficit', `$${state.budgetDeficit}`);
+            updateElement('policy-effectiveness', state.policyEffectiveness);
+        }
+        
+        function updateFiscalImpactChart() {
+            const state = economicState['fiscal-lab'];
+            if (!state) return;
+            
+            const impacts = [
+                { id: 'direct-effect', value: state.directEffect },
+                { id: 'multiplier-effect', value: state.multiplierEffect },
+                { id: 'crowding-out', value: Math.abs(state.crowdingOut) },
+                { id: 'export-effect', value: Math.abs(state.exportEffect) },
+                { id: 'total-impact', value: Math.abs(state.totalImpact) }
+            ];
+            
+            const maxValue = 200;
+            impacts.forEach(impact => {
+                const percentage = Math.min(100, (Math.abs(impact.value) / maxValue) * 100);
+                const barElement = document.getElementById(`${impact.id}-bar`);
+                const valueElement = document.getElementById(`${impact.id}-value`);
+                
+                if (barElement) barElement.style.width = `${percentage}%`;
+                if (valueElement) {
+                    if (impact.id === 'crowding-out' || impact.id === 'export-effect') {
+                        valueElement.textContent = `$${impact.value.toFixed(1)}B`;
+                    } else {
+                        valueElement.textContent = `$${impact.value.toFixed(1)}B`;
+                    }
+                }
+            });
+        }
+
+        // Central Bank Governor Functions
+        function updateCentralBankScenario() {
+            const state = economicState['central-bank'];
+            if (!state) return;
+
+            // Apply Theory of Liquidity Preference calculations
+            // Base money demand from price level and income (Y and P from lecture)
+            let baseMoneyDemand = (state.priceLevel / 100) * (state.incomeLevel / 100) * 100;
+            
+            // Money supply change affects interest rates directly
+            let moneySupplyFactor = 1 + (state.moneySupplyChange / 100);
+            let bondPurchaseFactor = state.bondPurchases > 100 ? 1 + ((state.bondPurchases - 100) / 200) : 1;
+            let totalMoneySupply = 100 * moneySupplyFactor * bondPurchaseFactor;
+            
+            // Interest rate determination via liquidity preference
+            // When money supply increases, interest rate falls (people have excess cash, buy bonds)
+            let baseRate = 4.5;
+            let moneySupplyEffect = -(state.moneySupplyChange * 0.15); // Negative relationship
+            let bondPurchaseEffect = -((state.bondPurchases - 100) * 0.02); // QE reduces rates
+            let moneyDemandEffect = (baseMoneyDemand - 100) * 0.05; // Higher demand -> higher rates
+            
+            state.interestRate = Math.max(0.1, baseRate + moneySupplyEffect + bondPurchaseEffect + moneyDemandEffect);
+            
+            // Investment responds to interest rate changes (Interest Rate Effect from lecture)
+            let investmentChange = -(state.interestRate - 4.5) * 15; // Lower rates boost investment
+            state.investmentLevel = Math.max(20, 100 + investmentChange);
+            
+            // Exchange rate responds to interest rate changes (Open Economy from lecture)
+            let exchangeRateChange = (state.interestRate - 4.5) * 0.03; // Higher rates strengthen currency
+            state.exchangeRate = Math.max(0.50, 0.75 + exchangeRateChange);
+            
+            // Net exports respond to exchange rate (weaker dollar boosts exports)
+            let netExportChange = -(state.exchangeRate - 0.75) * 200;
+            state.netExports = Math.max(50, 100 + netExportChange);
+            
+            // Aggregate demand from investment and net exports
+            let investmentContribution = (state.investmentLevel - 100) * 0.3;
+            let exportsContribution = (state.netExports - 100) * 0.2;
+            state.aggregateDemand = 100 + investmentContribution + exportsContribution;
+            
+            // Money demand adjusts to new equilibrium
+            state.moneyDemand = baseMoneyDemand;
+            
+            // Bond prices move inverse to interest rates
+            let bondPriceChange = -(state.interestRate - 4.5) * 15;
+            state.bondPrices = Math.max(70, 100 + bondPriceChange);
+            
+            // Financial stress based on crisis type and policy response
+            updateFinancialStress(state);
+            
+            // Crisis-specific adjustments
+            applyCrisisEffects(state);
+        }
+
+        function updateFinancialStress(state) {
+            let stress = 'low';
+            let stressLevel = 0;
+            
+            // Crisis baseline stress
+            const crisisStress = {
+                'recession': 30,
+                'inflation': 20,
+                'financial-crisis': 60,
+                'covid': 80,
+                'oil-shock': 40
+            };
+            
+            stressLevel = crisisStress[state.crisis] || 20;
+            
+            // Policy response reduces stress
+            let policyResponse = Math.abs(state.moneySupplyChange) + (state.bondPurchases - 100) / 10;
+            stressLevel = Math.max(5, stressLevel - policyResponse * 2);
+            
+            if (stressLevel > 50) stress = 'high';
+            else if (stressLevel > 25) stress = 'moderate';
+            
+            state.financialStress = stress;
+        }
+
+        function applyCrisisEffects(state) {
+            const crisis = state.crisis;
+            
+            switch(crisis) {
+                case 'recession':
+                    // Recession: Need expansionary policy
+                    if (state.moneySupplyChange < 5) {
+                        state.aggregateDemand *= 0.9; // Insufficient stimulus
+                        state.investmentLevel *= 0.85;
+                    }
+                    break;
+                    
+                case 'inflation':
+                    // Inflation: Need contractionary policy
+                    if (state.moneySupplyChange > -5) {
+                        state.aggregateDemand *= 1.1; // Fueling inflation
+                        state.interestRate *= 0.95; // Not tight enough
+                    }
+                    break;
+                    
+                case 'financial-crisis':
+                    // Financial crisis: Need massive liquidity injection
+                    if (state.bondPurchases < 200) {
+                        state.financialStress = 'high';
+                        state.bondPrices *= 0.9;
+                    }
+                    break;
+                    
+                case 'covid':
+                    // COVID: Need unprecedented expansion (like 2020 response)
+                    if (state.moneySupplyChange < 20 || state.bondPurchases < 300) {
+                        state.aggregateDemand *= 0.7;
+                        state.financialStress = 'high';
+                    }
+                    break;
+                    
+                case 'oil-shock':
+                    // Oil shock: Stagflation dilemma
+                    state.aggregateDemand *= 0.95; // Supply shock reduces AD
+                    if (state.moneySupplyChange > 0) {
+                        // Expansionary policy worsens inflation in supply shock
+                        state.interestRate *= 0.9;
+                    }
+                    break;
+            }
+        }
+
+        function updateCentralBankDisplay() {
+            const state = economicState['central-bank'];
+            if (!state) return;
+            
+            // Update input displays
+            updateElement('money-supply-display', `${state.moneySupplyChange}%`);
+            updateElement('bond-purchases-display', `$${state.bondPurchases}B`);
+            updateElement('price-level-display', `${state.priceLevel}`);
+            updateElement('income-level-display', `${state.incomeLevel}`);
+            
+            // Update economic indicators
+            updateElement('interest-rate-cb', state.interestRate.toFixed(1));
+            updateElement('investment-level', state.investmentLevel > 110 ? 'High' : state.investmentLevel < 90 ? 'Low' : 'Normal');
+            updateElement('exchange-rate', `$${state.exchangeRate.toFixed(2)} USD`);
+            updateElement('net-exports-cb', state.netExports > 110 ? 'Strong' : state.netExports < 90 ? 'Weak' : 'Balanced');
+            updateElement('aggregate-demand-cb', state.aggregateDemand.toFixed(0));
+            updateElement('money-demand-cb', state.moneyDemand > 110 ? 'High' : state.moneyDemand < 90 ? 'Low' : 'Normal');
+            updateElement('bond-prices', `$${state.bondPrices.toFixed(0)}`);
+            updateElement('financial-stress', state.financialStress.charAt(0).toUpperCase() + state.financialStress.slice(1));
+            
+            // Update change indicators
+            const rateChange = state.interestRate - 4.5;
+            updateElement('interest-rate-change-cb', rateChange > 0.1 ? '↗ Rising' : rateChange < -0.1 ? '↘ Falling' : 'Stable');
+            
+            const invChange = state.investmentLevel - 100;
+            updateElement('investment-change', `${invChange > 0 ? '+' : ''}${invChange.toFixed(0)}%`);
+            
+            const exChange = state.exchangeRate - 0.75;
+            updateElement('exchange-change', Math.abs(exChange) > 0.02 ? (exChange > 0 ? 'Strengthening' : 'Weakening') : 'Stable');
+            
+            const expChange = state.netExports - 100;
+            updateElement('exports-change', `${expChange > 0 ? '+' : ''}${expChange.toFixed(0)}%`);
+            
+            const adChange = state.aggregateDemand - 100;
+            updateElement('ad-change-cb', adChange > 5 ? '↗ Rising' : adChange < -5 ? '↘ Falling' : 'Stable');
+            
+            const mdChange = state.moneyDemand - 100;
+            updateElement('md-change-cb', Math.abs(mdChange) > 5 ? (mdChange > 0 ? '↗ Rising' : '↘ Falling') : 'Stable');
+            
+            const bondChange = state.bondPrices - 100;
+            updateElement('bond-price-change', bondChange > 5 ? '↗ Rising' : bondChange < -5 ? '↘ Falling' : 'Stable');
+            
+            updateElement('stress-change', getStressDescription(state.crisis, state.financialStress));
+            
+            // Update money market visualization
+            updateMoneyMarketChart(state);
+            
+            // Update results text
+            updateCentralBankResults(state);
+        }
+
+        function updateMoneyMarketChart(state) {
+            // Update money supply line position based on money supply change
+            const msLine = document.getElementById('ms-line');
+            const equilibriumPoint = document.getElementById('equilibrium-point');
+            const rateLabel = document.getElementById('equilibrium-rate');
+            
+            if (msLine && equilibriumPoint && rateLabel) {
+                // Money supply position (more money = line moves right)
+                let msPosition = 60 + (state.moneySupplyChange * 0.8);
+                msLine.style.left = `${Math.max(20, Math.min(80, msPosition))}%`;
+                
+                // Equilibrium point follows money supply line
+                equilibriumPoint.style.left = `${Math.max(19, Math.min(79, msPosition - 1))}%`;
+                
+                // Interest rate determines vertical position (higher rate = higher up)
+                let ratePosition = 80 - ((state.interestRate / 10) * 60); // Scale 0-10% to position
+                equilibriumPoint.style.top = `${Math.max(10, Math.min(70, ratePosition))}%`;
+                rateLabel.style.top = `${Math.max(8, Math.min(68, ratePosition - 2))}%`;
+                rateLabel.style.left = `${Math.max(21, Math.min(81, msPosition + 1))}%`;
+                
+                // Update rate display
+                rateLabel.textContent = `${state.interestRate.toFixed(1)}%`;
+            }
+        }
+
+        function getStressDescription(crisis, stress) {
+            const descriptions = {
+                'recession': stress === 'high' ? 'Needs more stimulus' : stress === 'moderate' ? 'Responding to policy' : 'Recovery underway',
+                'inflation': stress === 'high' ? 'Prices accelerating' : stress === 'moderate' ? 'Tightening working' : 'Inflation controlled',
+                'financial-crisis': stress === 'high' ? 'Credit markets frozen' : stress === 'moderate' ? 'Liquidity flowing' : 'Markets stabilized',
+                'covid': stress === 'high' ? 'Economy in shock' : stress === 'moderate' ? 'Policy supporting' : 'Recovery taking hold',
+                'oil-shock': stress === 'high' ? 'Stagflation risk' : stress === 'moderate' ? 'Adjusting to shock' : 'Economy adapting'
+            };
+            
+            return descriptions[crisis] || 'Monitoring conditions';
+        }
+
+        function updateCentralBankResults(state) {
+            const crisis = state.crisis;
+            const moneyChange = state.moneySupplyChange;
+            const bondPurchases = state.bondPurchases;
+            const rate = state.interestRate;
+            
+            let message = '';
+            
+            // Provide educational feedback based on Theory of Liquidity Preference
+            if (crisis === 'recession' && moneyChange > 0) {
+                message = `✅ Good expansionary policy! By increasing money supply ${moneyChange}%, you've lowered interest rates to ${rate.toFixed(1)}%, boosting investment and aggregate demand. This follows Keynes's liquidity preference theory: more money means people buy bonds, driving down interest rates.`;
+            } else if (crisis === 'recession' && moneyChange <= 0) {
+                message = `⚠️ In a recession, you need expansionary monetary policy. Your current policy keeps rates at ${rate.toFixed(1)}%, which won't stimulate enough investment. Try increasing money supply to lower rates and boost economic activity.`;
+            } else if (crisis === 'inflation' && moneyChange < 0) {
+                message = `✅ Appropriate contractionary policy! By reducing money supply ${Math.abs(moneyChange)}%, you've raised interest rates to ${rate.toFixed(1)}%, cooling down excessive demand. Higher rates make bonds more attractive than money, reducing spending.`;
+            } else if (crisis === 'inflation' && moneyChange >= 0) {
+                message = `⚠️ With inflation surging, expansionary policy will make it worse! Your policy keeps rates low at ${rate.toFixed(1)}%, fueling more spending. Try contractionary policy to cool the economy.`;
+            } else if (crisis === 'covid' && bondPurchases >= 300) {
+                message = `✅ Massive QE response like 2020! Your $${bondPurchases}B bond purchases inject liquidity directly into markets, bypassing normal money transmission. This prevents financial system collapse when traditional policy hits zero lower bound.`;
+            } else if (crisis === 'financial-crisis' && bondPurchases < 200) {
+                message = `⚠️ Financial crises require aggressive liquidity injection! Banks aren't lending, so normal monetary policy transmission is broken. You need quantitative easing (bond purchases) to directly inject money into financial markets.`;
+            } else {
+                message = `Your policy has set interest rates at ${rate.toFixed(1)}%. Investment is ${state.investmentLevel > 110 ? 'booming' : state.investmentLevel < 90 ? 'weak' : 'stable'}, the CAD is ${state.exchangeRate > 0.78 ? 'strong' : state.exchangeRate < 0.72 ? 'weak' : 'stable'}, and aggregate demand is ${state.aggregateDemand > 105 ? 'rising' : state.aggregateDemand < 95 ? 'falling' : 'stable'}. Remember: you can't control both money supply and exchange rates simultaneously (impossible trinity).`;
+            }
+            
+            updateElement('central-bank-results', message);
+        }
+
+        // Utility function to update element content safely
+        function updateElement(id, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        }
+    </script>
+</body>
+</html>
